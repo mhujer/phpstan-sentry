@@ -9,11 +9,12 @@ use Consistence\Sentry\SentryAware;
 use PHPStan\Broker\Broker;
 use PHPStan\Reflection\BrokerAwareClassReflectionExtension;
 use PHPStan\Reflection\ClassReflection;
-use PHPStan\Reflection\ClassReflectionExtension;
 use PHPStan\Reflection\MethodReflection;
+use PHPStan\Reflection\MethodsClassReflectionExtension;
 use PHPStan\Reflection\PropertyReflection;
+use PHPStan\Type\TypehintHelper;
 
-class SentryAwareClassReflectionExtension implements ClassReflectionExtension, BrokerAwareClassReflectionExtension
+class SentryAwareClassReflectionExtension implements MethodsClassReflectionExtension, BrokerAwareClassReflectionExtension
 {
 
 	/** @var \Consistence\Sentry\MetadataSource\MetadataSource */
@@ -30,16 +31,6 @@ class SentryAwareClassReflectionExtension implements ClassReflectionExtension, B
 	public function setBroker(Broker $broker)
 	{
 		$this->broker = $broker;
-	}
-
-	public function hasProperty(ClassReflection $classReflection, string $propertyName): bool
-	{
-		return false;
-	}
-
-	public function getProperty(ClassReflection $classReflection, string $propertyName): PropertyReflection
-	{
-		return false;
 	}
 
 	public function hasMethod(ClassReflection $classReflection, string $methodName): bool
@@ -75,8 +66,10 @@ class SentryAwareClassReflectionExtension implements ClassReflectionExtension, B
 			|| $sentryAccess->equals(new SentryAccess('remove'))
 			|| $sentryAccess->equals(new SentryAccess('contains'));
 		return new SentryMethodReflection(
+			$methodName,
 			$this->broker->getClass($property->getClassName()),
 			$sentryMethod->getMethodVisibility(),
+			TypehintHelper::getTypeObjectFromTypehint($property->getType(), $property->isNullable()),
 			$methodHasParameter ? ($isSetter ? $property->isNullable() : false) : null
 		);
 	}
