@@ -1,0 +1,5 @@
+{
+	"name": "phpstan/phpstan-sentry",
+	"description": "Consistence Sentry class reflection extension for PHPStan",
+	"license": ["MIT"]
+}
