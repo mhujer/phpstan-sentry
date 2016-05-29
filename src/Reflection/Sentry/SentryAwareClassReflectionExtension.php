@@ -6,6 +6,7 @@ use Consistence\Sentry\Metadata\SentryAccess;
 use Consistence\Sentry\Metadata\Visibility;
 use Consistence\Sentry\MetadataSource\MetadataSource;
 use Consistence\Sentry\SentryAware;
+use Consistence\Sentry\SentryIdentificatorParser\SentryIdentificatorParser;
 use PHPStan\Broker\Broker;
 use PHPStan\Reflection\BrokerAwareClassReflectionExtension;
 use PHPStan\Reflection\ClassReflection;
@@ -20,12 +21,19 @@ class SentryAwareClassReflectionExtension implements MethodsClassReflectionExten
 	/** @var \Consistence\Sentry\MetadataSource\MetadataSource */
 	private $metadataSource;
 
+	/** @var \Consistence\Sentry\SentryIdentificatorParser\SentryIdentificatorParser */
+	private $sentryIdentificatorParser;
+
 	/** @var \PHPStan\Broker\Broker */
 	private $broker;
 
-	public function __construct(MetadataSource $metadataSource)
+	public function __construct(
+		MetadataSource $metadataSource,
+		SentryIdentificatorParser $sentryIdentificatorParser
+	)
 	{
 		$this->metadataSource = $metadataSource;
+		$this->sentryIdentificatorParser = $sentryIdentificatorParser;
 	}
 
 	public function setBroker(Broker $broker)
@@ -65,11 +73,17 @@ class SentryAwareClassReflectionExtension implements MethodsClassReflectionExten
 			|| $sentryAccess->equals(new SentryAccess('add'))
 			|| $sentryAccess->equals(new SentryAccess('remove'))
 			|| $sentryAccess->equals(new SentryAccess('contains'));
+
+		$typehint = $property->getType();
+		$parserResult = $this->sentryIdentificatorParser->parse($property->getSentryIdentificator());
+		if ($parserResult->isMany()) {
+			$typehint .= '[]';
+		}
 		return new SentryMethodReflection(
 			$methodName,
 			$this->broker->getClass($property->getClassName()),
 			$sentryMethod->getMethodVisibility(),
-			TypehintHelper::getTypeObjectFromTypehint($property->getType(), $property->isNullable()),
+			TypehintHelper::getTypeObjectFromTypehint($typehint, $property->isNullable()),
 			$methodHasParameter ? ($isSetter ? $property->isNullable() : false) : null
 		);
 	}
