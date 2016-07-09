@@ -1,0 +1,8 @@
+services:
+	-
+		class: Consistence\Sentry\SentryIdentificatorParser\SentryIdentificatorParser
+
+	-
+		class: PHPStan\Reflection\Sentry\SentryAwareClassReflectionExtension
+		tags:
+			- phpstan.broker.methodsClassReflectionExtension
