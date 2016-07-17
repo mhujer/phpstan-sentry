@@ -1,4 +1,4 @@
-<?php declare(strict_types=1);
+<?php declare(strict_types = 1);
 
 namespace PHPStan\Reflection\Sentry;
 
@@ -12,7 +12,6 @@ use PHPStan\Reflection\BrokerAwareClassReflectionExtension;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\MethodsClassReflectionExtension;
-use PHPStan\Reflection\PropertyReflection;
 use PHPStan\Type\TypehintHelper;
 
 class SentryAwareClassReflectionExtension implements MethodsClassReflectionExtension, BrokerAwareClassReflectionExtension
@@ -87,4 +86,5 @@ class SentryAwareClassReflectionExtension implements MethodsClassReflectionExten
 			$methodHasParameter ? ($isSetter ? $property->isNullable() : false) : null
 		);
 	}
+
 }
