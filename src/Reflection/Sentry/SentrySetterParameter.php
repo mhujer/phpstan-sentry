@@ -31,4 +31,9 @@ class SentrySetterParameter implements ParameterReflection
 		return $this->type;
 	}
 
+	public function isPassedByReference(): bool
+	{
+		return false;
+	}
+
 }
