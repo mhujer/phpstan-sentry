@@ -6,15 +6,12 @@ use Consistence\Sentry\Metadata\SentryAccess;
 use Consistence\Sentry\Metadata\Visibility;
 use Consistence\Sentry\MetadataSource\MetadataSource;
 use Consistence\Sentry\SentryAware;
-use Consistence\Sentry\SentryIdentificatorParser\SentryIdentificatorParser;
 use PHPStan\Broker\Broker;
 use PHPStan\Reflection\BrokerAwareClassReflectionExtension;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\MethodsClassReflectionExtension;
-use PHPStan\Type\FileTypeMapper;
-use PHPStan\Type\MixedType;
-use PHPStan\Type\TypehintHelper;
+use PHPStan\Reflection\Php\PhpClassReflectionExtension;
 
 class SentryAwareClassReflectionExtension implements MethodsClassReflectionExtension, BrokerAwareClassReflectionExtension
 {
@@ -22,14 +19,19 @@ class SentryAwareClassReflectionExtension implements MethodsClassReflectionExten
 	/** @var \Consistence\Sentry\MetadataSource\MetadataSource */
 	private $metadataSource;
 
+	/** @var \PHPStan\Reflection\Php\PhpClassReflectionExtension */
+	private $phpClassReflectionExtension;
+
 	/** @var \PHPStan\Broker\Broker */
 	private $broker;
 
 	public function __construct(
-		MetadataSource $metadataSource
+		MetadataSource $metadataSource,
+		PhpClassReflectionExtension $phpClassReflectionExtension
 	)
 	{
 		$this->metadataSource = $metadataSource;
+		$this->phpClassReflectionExtension = $phpClassReflectionExtension;
 	}
 
 	public function setBroker(Broker $broker)
@@ -66,24 +68,13 @@ class SentryAwareClassReflectionExtension implements MethodsClassReflectionExten
 			|| $sentryAccess->equals(new SentryAccess('remove'))
 			|| $sentryAccess->equals(new SentryAccess('contains'));
 
-		$sentryIdentificator = $property->getSentryIdentificator()->getId();
-		preg_match(sprintf('#.*%s%s#', SentryIdentificatorParser::SOURCE_CLASS_SEPARATOR, FileTypeMapper::TYPE_PATTERN), $sentryIdentificator, $matches);
-
-		$typeParts = array_values(array_filter(explode('|', $matches[1]), function (string $part): bool {
-			return $part !== 'null';
-		}));
-
-		if (count($typeParts) === 1) {
-			$type = TypehintHelper::getTypeObjectFromTypehint(ltrim($typeParts[0], '\\'), $property->isNullable());
-		} else {
-			$type = new MixedType($property->isNullable());
-		}
+		$propertyClass = $this->broker->getClass($property->getClassName());
 
 		return new SentryMethodReflection(
 			$methodName,
-			$this->broker->getClass($property->getClassName()),
+			$propertyClass,
 			$sentryMethod->getMethodVisibility(),
-			$type,
+			$this->phpClassReflectionExtension->getProperty($propertyClass, $property->getName())->getType(),
 			$methodHasParameter ? ($isSetter ? $property->isNullable() : false) : null
 		);
 	}
