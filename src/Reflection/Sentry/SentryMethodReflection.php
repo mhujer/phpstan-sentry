@@ -75,12 +75,12 @@ class SentryMethodReflection implements MethodReflection
 
 	public function isPrivate(): bool
 	{
-		return $this->visibility->equalsValue(Visibility::VISIBILITY_PRIVATE);
+		return $this->visibility->equals(Visibility::get(Visibility::VISIBILITY_PRIVATE));
 	}
 
 	public function isPublic(): bool
 	{
-		return $this->visibility->equalsValue(Visibility::VISIBILITY_PUBLIC);
+		return $this->visibility->equals(Visibility::get(Visibility::VISIBILITY_PUBLIC));
 	}
 
 	public function getReturnType(): Type
