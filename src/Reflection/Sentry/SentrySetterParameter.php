@@ -36,4 +36,9 @@ class SentrySetterParameter implements ParameterReflection
 		return false;
 	}
 
+	public function isVariadic(): bool
+	{
+		return false;
+	}
+
 }
