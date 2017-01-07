@@ -51,6 +51,11 @@ class SentryMethodReflection implements MethodReflection
 		return $this->declaringClass;
 	}
 
+	public function getPrototype(): MethodReflection
+	{
+		return $this;
+	}
+
 	public function isStatic(): bool
 	{
 		return false;
