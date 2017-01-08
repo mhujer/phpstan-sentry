@@ -5,8 +5,8 @@ namespace PHPStan\Reflection\Sentry;
 use Consistence\Sentry\Metadata\Visibility;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\MethodReflection;
-use PHPStan\Type\NullType;
 use PHPStan\Type\Type;
+use PHPStan\Type\VoidType;
 
 class SentryMethodReflection implements MethodReflection
 {
@@ -94,7 +94,7 @@ class SentryMethodReflection implements MethodReflection
 			return $this->type;
 		}
 
-		return new NullType();
+		return new VoidType();
 	}
 
 }
